@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Patron {
 
-    String userid;
-    String username;
+    int userid;
     String password;
     String firstname;
     String lastname;

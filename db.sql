@@ -12,24 +12,19 @@ DROP TABLE IF EXISTS patron;
 DROP TABLE IF EXISTS admin;
 DROP TABLE IF EXISTS superuser;
 
-#第一次release后变动
-
-#要求只输一个book id来还书，只在借的时候生成borrow id，还书也输入borrow id；book表的remain依旧是实际剩余数，id依旧是一种书一个。
-# 最终book表的更改就是新增了location；由于book id依然存在，借书的时候展示的是book name，实际数据库还是跟book id关联
-
-#关于用户，要求是id、password自动生成后再给用户展示
+#关于用户，老师要求是id、password自动生成后再给用户展示， 所以：user表全拆开，userid都是自增
 #登录就用user id + passowrd，选择哪个身份就查哪个表
 
+#第一次release后变动5.3版
 
-#具体更改
-#book表 bookid自增 添加location字段;
-#patron表 userid自增 删掉username
-#staff表 username改成userid，自增
-#删除user表
-#新建 admin表
-#新建 superuser表
-#brorrw、reservation表参照的都是patron的userid
+#删除user表   		新建 admin表、superuser表
+#	patron表 	    userid自增   删掉username
+#	staff表 		 username改成userid，自增
+#book表              bookid自增 添加location字段;   添加book测试数据
+#brorrw表、reservation表       参照的都是patron的userid
 
+#5.4更改  新增returned表
+#5.5 borrow表 resvation表用的userid bookid还是varchar，改成int
 
 
 CREATE  TABLE IF NOT EXISTS staff(
@@ -89,8 +84,8 @@ CREATE TABLE IF NOT EXISTS book(
 );
 CREATE TABLE IF NOT EXISTS borrow(
                                      borrowid VARCHAR(255),
-                                     userid VARCHAR(255),
-                                     bookid VARCHAR(255),
+                                     userid int,
+                                     bookid int,
                                      borrowtime DATE,
                                      deadline DATE,
                                      status ENUM('returned','borrowing'),
@@ -101,14 +96,23 @@ CREATE TABLE IF NOT EXISTS borrow(
 
 CREATE TABLE IF NOT EXISTS reservation(
                                           reservationid VARCHAR(255),
-                                          userid VARCHAR(255),
-                                          bookid VARCHAR(255),
+                                          userid int,
+                                          bookid int,
                                           reservationtime DATE,
                                           status ENUM('canceled','waiting','satisfied'),
                                           FOREIGN KEY(userid) REFERENCES patron(userid) ON UPDATE CASCADE ON DELETE CASCADE ,
                                           FOREIGN KEY(bookid) REFERENCES book(bookid) ON UPDATE CASCADE ON DELETE CASCADE ,
                                           PRIMARY KEY (reservationid)
 );
+
+CREATE TABLE IF NOT EXISTS returned(
+                                     borrowid VARCHAR(255) PRIMARY KEY ,
+                                     returntime DATE, #还书的实际时间，还书的ddl在borrow表中
+                                     fineamount int, #罚款金额
+                                     ispay boolean, #是否交过罚款
+                                     FOREIGN KEY(borrowid) REFERENCES borrow(borrowid) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
 
 # CREATE TABLE IF NOT EXISTS user(
 #                                    userid VARCHAR(255) PRIMARY KEY,
@@ -146,13 +150,28 @@ INSERT INTO book(bookname, press, author, publishtime, catagory, remain, introdu
 
 
 -- 生成20条随机数据 patron
-INSERT INTO patron (password, firstname, lastname, email, telephone, avatar)
-SELECT
-  CONCAT('pwd', LPAD(FLOOR(RAND() * 10000), 4, '0')) AS password,
-  CONCAT('fn', LPAD(FLOOR(RAND() * 100), 2, '0')) AS firstname,
-  CONCAT('ln', LPAD(FLOOR(RAND() * 100), 2, '0')) AS lastname,
-  CONCAT('em', LPAD(FLOOR(RAND() * 100), 2, '0'), '@example.com') AS email,
-  CONCAT('', LPAD(FLOOR(RAND() * 100000000), 8, '0')) AS telephone,
-  CONCAT('avatars/', LPAD(FLOOR(RAND() * 10) + 1, 2, '0'), '.svg') AS avatar
-FROM INFORMATION_SCHEMA.TABLES
-LIMIT 20;
+INSERT INTO patron (password, firstname, lastname, email, telephone, avatar) VALUES
+('s3cr3tp@ss', 'John', 'Doe', 'johndoe@example.com', '+1-234-567-8901', 'avatars/7.svg'),
+('7yN7UBG@vk', 'Jane', 'Smith', 'janesmith@example.com', '+1-345-678-9012', 'avatars/3.svg'),
+('p@ssw0rd123', 'Bob', 'Johnson', 'bobjohnson@example.com', '+1-456-789-0123', 'avatars/2.svg'),
+('pa$sw0rd456', 'Sarah', 'Lee', 'sarahlee@example.com', '+1-567-890-1234', 'avatars/6.svg'),
+('Qwerty123!', 'David', 'Chen', 'davidchen@example.com', '+1-678-901-2345', 'avatars/10.svg'),
+('myp@ssw0rd', 'Linda', 'Wang', 'lindawang@example.com', '+1-789-012-3456', 'avatars/5.svg'),
+('Passw0rd', 'Eric', 'Kim', 'erickim@example.com', '+1-890-123-4567', 'avatars/8.svg'),
+('starbucks', 'Emily', 'Jones', 'emilyjones@example.com', '+1-901-234-5678', 'avatars/1.svg'),
+('Hello123', 'Mark', 'Davis', 'markdavis@example.com', '+1-012-345-6789', 'avatars/9.svg'),
+('P@ssword123', 'Melissa', 'Lopez', 'melissalopez@example.com', '+1-123-456-7890', 'avatars/4.svg'),
+('sunshine', 'Chris', 'Brown', 'chrisbrown@example.com', '+1-234-567-8901', 'avatars/2.svg'),
+('pa$$word', 'Ava', 'Taylor', 'avataylor@example.com', '+1-345-678-9012', 'avatars/3.svg'),
+('qwertyuiop', 'Lucas', 'Wilson', 'lucaswilson@example.com', '+1-456-789-0123', 'avatars/6.svg'),
+('myPassword', 'Sophia', 'Martin', 'sophiamartin@example.com', '+1-567-890-1234', 'avatars/7.svg'),
+('baseball', 'Ethan', 'Flores', 'ethanflores@example.com', '+1-678-901-2345', 'avatars/10.svg'),
+('password1', 'Isabella', 'Garcia', 'isabellagarcia@example.com', '+1-789-012-3456', 'avatars/1.svg'),
+('qwerty123', 'Michael', 'Bailey', 'michaelbailey@example.com', '+1-890-123-4567', 'avatars/8.svg'),
+('hunter2', 'Daniel', 'Nguyen', 'danielnguyen@example.com', '+1-901-234-5678', 'avatars/4.svg'),
+('iloveme', 'Olivia', 'Hernandez', 'oliviahernandez@example.com', '+1-012-345-6789', 'avatars/9.svg'),
+('1234567890', 'Matthew', 'Allen', 'matthewallen@example.com', '+1-123-456-7890', 'avatars/5.svg');
+
+
+INSERT INTO borrow (borrowid, userid, bookid, borrowtime, deadline, status) VALUES
+('brid001', '1', '1', '2023-02-05', '2023-03-07', 'borrowing');
