@@ -14,6 +14,6 @@ public interface StaffService {
     List<Patron> getAllPatrons();
 
     //还书
-    int returnBook(String borrowid, Date date);
+    int returnBook(String borrowid, Date returntime);
 
 }

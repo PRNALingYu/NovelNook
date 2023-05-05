@@ -29,7 +29,7 @@ public interface StaffMapper {
     @Update("update borrow set status = 'returned' where borrowid = #{borrowid}")
     int returnBookBorrowStatus(@Param("borrowid")String borowid);
     //4. returned new
-    @Insert("Insert into returned(borrowid, returntime, fineamount, ispay) values (#{borrowid}, #{returntime}, #{fineamount} #{ispay})")
+    @Insert("Insert into returned(borrowid, returntime, fineamount, ispay) values (#{borrowid}, #{returntime}, #{fineamount}, #{ispay})")
     int returnBookAddReturn(Returned returned);
 
 

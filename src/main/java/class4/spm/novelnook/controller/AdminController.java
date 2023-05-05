@@ -114,7 +114,7 @@ public class AdminController {
         String Password = staff.getPassword();
         if (list != null && Password.equals(password)) {
             // 登录成功，设置cookie等
-            response.addCookie(new Cookie("username", staff.getUsername()));
+            //response.addCookie(new Cookie("username", staff.getUsername()));
             return R.success(staff);
         } else {
             // 登录失败，返回错误信息和状态码

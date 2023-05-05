@@ -174,4 +174,4 @@ INSERT INTO patron (password, firstname, lastname, email, telephone, avatar) VAL
 
 
 INSERT INTO borrow (borrowid, userid, bookid, borrowtime, deadline, status) VALUES
-('brid001', '1', '1', '2023-05-05', '2023-06-05', 'borrowing');
+('brid001', '1', '1', '2023-02-05', '2023-03-07', 'borrowing');
